@@ -1,6 +1,65 @@
 
-const { createTables, getDatabase } = require('./lib/database.ts')
+const { Pool } = require('pg')
 const Anthropic = require('@anthropic-ai/sdk')
+require('dotenv').config({ path: '.env.local' })
+
+// Database functions (copied from lib/database.ts)
+let pool = null
+
+function getDatabase() {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    })
+  }
+  return pool
+}
+
+async function createTables() {
+  const db = getDatabase()
+  
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS projects (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      status VARCHAR(50) DEFAULT 'planning',
+      manager VARCHAR(255) NOT NULL,
+      budget DECIMAL(12, 2) NOT NULL,
+      spent DECIMAL(12, 2) DEFAULT 0,
+      progress INTEGER DEFAULT 0,
+      deadline DATE,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `)
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS documents (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      project_id UUID REFERENCES projects(id),
+      filename VARCHAR(255) NOT NULL,
+      original_name VARCHAR(255) NOT NULL,
+      file_size BIGINT NOT NULL,
+      file_type VARCHAR(100) NOT NULL,
+      upload_path TEXT NOT NULL,
+      uploaded_at TIMESTAMP DEFAULT NOW()
+    )
+  `)
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS intelligence (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      document_id UUID REFERENCES documents(id),
+      analysis_type VARCHAR(100) NOT NULL,
+      insights JSONB,
+      recommendations TEXT[],
+      risk_level VARCHAR(20) DEFAULT 'low',
+      generated_at TIMESTAMP DEFAULT NOW()
+    )
+  `)
+}
 
 async function testClaudeAPI() {
   console.log('\n🧠 Testing Claude API Key...')
@@ -81,7 +140,7 @@ async function testSegaCoreAPI() {
   console.log('\n🎯 Testing SegaCore Intelligence API...')
   
   try {
-    const response = await fetch('http://localhost:3000/api/segacore-intelligence', {
+    const response = await fetch('http://0.0.0.0:3000/api/segacore-intelligence', {
       method: 'GET'
     })
     
