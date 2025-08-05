@@ -1,0 +1,1264 @@
+# SegaCore V1.0 - Complete Development Guide
+## From Concept to Working Construction Intelligence System
+
+---
+
+## Phase 1: Technical Foundation (Week 1-2)
+
+### **Replit Project Setup**
+
+#### **1. Create New Replit Project**
+```bash
+# Project Name: segacore-v1
+# Template: Next.js
+# Description: Construction Intelligence Platform V1.0
+```
+
+#### **2. Package.json Configuration**
+```json
+{
+  "name": "segacore-v1",
+  "version": "1.0.0",
+  "description": "Construction Intelligence Platform",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build", 
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "tailwindcss": "^3.3.0",
+    "lucide-react": "^0.263.1",
+    "recharts": "^2.8.0",
+    "@anthropic-ai/sdk": "^0.24.0",
+    "multer": "^1.4.5",
+    "pg": "^8.11.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0",
+    "dotenv": "^16.3.0",
+    "uuid": "^9.0.0",
+    "@types/uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/multer": "^1.4.7",
+    "@types/pg": "^8.10.0",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^9.0.0"
+  }
+}
+```
+
+#### **3. Environment Variables (.env.local)**
+```env
+# Claude AI API
+ANTHROPIC_API_KEY=your_claude_api_key_here
+
+# Database (Replit PostgreSQL)
+DATABASE_URL=postgresql://user:password@host:port/segacore_v1
+
+# JWT Authentication
+JWT_SECRET=your_jwt_secret_here
+
+# File Upload Settings
+MAX_FILE_SIZE=10485760
+UPLOAD_PATH=/tmp/uploads
+
+# App Configuration
+NEXT_PUBLIC_APP_NAME=SegaCore V1.0
+NEXT_PUBLIC_VERSION=1.0.0
+```
+
+---
+
+## Phase 2: Database Schema (Week 2)
+
+### **PostgreSQL Schema for V1.0**
+```sql
+-- Core project information
+CREATE TABLE projects (
+    id SERIAL PRIMARY KEY,
+    project_name VARCHAR(255) NOT NULL,
+    project_code VARCHAR(100) UNIQUE,
+    contractor_name VARCHAR(255),
+    project_type VARCHAR(100), -- 'complex', 'a&a', 'data_center'
+    start_date DATE,
+    planned_end_date DATE,
+    current_status VARCHAR(50) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Document intelligence from AI analysis
+CREATE TABLE document_intelligence (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER REFERENCES projects(id),
+    
+    -- Document metadata
+    filename VARCHAR(255) NOT NULL,
+    file_type VARCHAR(50) NOT NULL, -- 'photo', 'pdf', 'daily_report'
+    upload_date TIMESTAMP DEFAULT NOW(),
+    file_hash VARCHAR(64) UNIQUE, -- Prevent duplicates
+    
+    -- AI Analysis Results (Your Core Metrics)
+    schedule_status VARCHAR(20), -- 'on-track', '5%-delay', '10%-delay', 'critical'
+    labor_productivity DECIMAL(3,1), -- 1-10 scale
+    site_activity VARCHAR(20), -- 'active', 'lacking', 'idle'
+    
+    -- Your Jobsite Assessment
+    safety_score DECIMAL(3,1), -- 1-10
+    housekeeping_score DECIMAL(3,1), -- 1-10
+    quality_score DECIMAL(3,1), -- 1-10
+    labor_count INTEGER,
+    equipment_suitability VARCHAR(20), -- 'adequate', 'inadequate', 'excessive'
+    
+    -- Contractor Capability Indicators
+    response_time VARCHAR(20), -- 'quick', 'slow', 'no-response'
+    situational_awareness BOOLEAN,
+    management_connection VARCHAR(20), -- 'connected', 'disconnected'
+    pressure_response VARCHAR(20), -- 'solution-focused', 'defensive', 'stop-work-threat'
+    
+    -- AI Analysis Details
+    claude_analysis TEXT, -- Full AI response
+    confidence_score DECIMAL(3,2), -- 0.00 to 1.00
+    processing_time_ms INTEGER,
+    
+    -- Your Weekly Intelligence
+    progress_vs_schedule TEXT,
+    delay_reason TEXT,
+    rectification_plan TEXT,
+    recommended_action TEXT,
+    
+    -- PM Validation
+    pm_validated BOOLEAN DEFAULT FALSE,
+    pm_agreement VARCHAR(20), -- 'agree', 'disagree', 'partial'
+    pm_notes TEXT,
+    pm_corrections JSON,
+    
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Contractor performance tracking
+CREATE TABLE contractor_performance (
+    id SERIAL PRIMARY KEY,
+    contractor_name VARCHAR(255) NOT NULL,
+    
+    -- Performance metrics
+    total_documents INTEGER DEFAULT 0,
+    avg_safety_score DECIMAL(3,1),
+    avg_quality_score DECIMAL(3,1),
+    avg_productivity DECIMAL(3,1),
+    
+    -- Your failure pattern indicators
+    continuous_delays BOOLEAN DEFAULT FALSE,
+    low_productivity_pattern BOOLEAN DEFAULT FALSE,
+    inexperienced_staff BOOLEAN DEFAULT FALSE,
+    pressure_failure_pattern BOOLEAN DEFAULT FALSE,
+    
+    -- Overall assessment
+    capability_rating DECIMAL(3,1), -- 1-10
+    reliability_score DECIMAL(3,1), -- 1-10
+    last_assessment DATE,
+    
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- PM experience rules and patterns
+CREATE TABLE pm_experience_rules (
+    id SERIAL PRIMARY KEY,
+    rule_name VARCHAR(255) NOT NULL,
+    rule_category VARCHAR(100), -- 'schedule', 'safety', 'quality', 'contractor'
+    
+    -- Rule definition
+    trigger_conditions JSON,
+    expected_outcome TEXT,
+    recommended_action TEXT,
+    confidence_level DECIMAL(3,2),
+    
+    -- Your experience backing
+    years_observed INTEGER DEFAULT 25,
+    project_examples TEXT[],
+    accuracy_rate DECIMAL(3,2),
+    
+    rule_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Weekly intelligence reports
+CREATE TABLE weekly_intelligence (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER REFERENCES projects(id),
+    week_ending DATE NOT NULL,
+    
+    -- Your key intelligence format
+    progress_summary TEXT,
+    schedule_variance DECIMAL(5,2), -- Percentage behind/ahead
+    delay_reasons TEXT[],
+    rectification_plans TEXT[],
+    recommended_actions TEXT[],
+    
+    -- Alert levels
+    alert_level VARCHAR(20), -- 'good', 'monitor', 'warning', 'critical'
+    intervention_required BOOLEAN DEFAULT FALSE,
+    
+    -- Supporting data
+    documents_analyzed INTEGER,
+    contractor_performance_trend VARCHAR(20), -- 'improving', 'stable', 'declining'
+    
+    generated_at TIMESTAMP DEFAULT NOW(),
+    pm_reviewed BOOLEAN DEFAULT FALSE,
+    pm_notes TEXT
+);
+
+-- Learning and feedback system
+CREATE TABLE learning_feedback (
+    id SERIAL PRIMARY KEY,
+    document_id INTEGER REFERENCES document_intelligence(id),
+    
+    -- AI prediction vs PM assessment
+    ai_prediction TEXT,
+    pm_correction TEXT,
+    actual_outcome TEXT,
+    outcome_date DATE,
+    
+    -- Learning insights
+    pattern_identified TEXT,
+    rule_adjustment TEXT,
+    confidence_change DECIMAL(3,2),
+    
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX idx_doc_intel_project ON document_intelligence(project_id);
+CREATE INDEX idx_doc_intel_date ON document_intelligence(upload_date);
+CREATE INDEX idx_doc_intel_contractor ON document_intelligence(project_id) 
+    WHERE (SELECT contractor_name FROM projects WHERE id = project_id) IS NOT NULL;
+CREATE INDEX idx_contractor_perf_name ON contractor_performance(contractor_name);
+CREATE INDEX idx_weekly_intel_project ON weekly_intelligence(project_id);
+CREATE INDEX idx_weekly_intel_date ON weekly_intelligence(week_ending);
+```
+
+---
+
+## Phase 3: Core AI Analysis Engine (Week 3)
+
+### **Claude Integration for Document Analysis**
+```typescript
+// lib/claude-analyzer.ts
+import Anthropic from '@anthropic-ai/sdk';
+
+const claude = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+interface DocumentAnalysis {
+  // Your core metrics
+  scheduleStatus: 'on-track' | '5%-delay' | '10%-delay' | 'critical';
+  laborProductivity: number; // 1-10
+  siteActivity: 'active' | 'lacking' | 'idle';
+  
+  // Your jobsite assessment
+  safetyScore: number; // 1-10
+  housekeepingScore: number; // 1-10
+  qualityScore: number; // 1-10
+  laborCount: number;
+  equipmentSuitability: 'adequate' | 'inadequate' | 'excessive';
+  
+  // Contractor capability
+  responseTime: 'quick' | 'slow' | 'no-response';
+  situationalAwareness: boolean;
+  managementConnection: 'connected' | 'disconnected';
+  pressureResponse: 'solution-focused' | 'defensive' | 'stop-work-threat';
+  
+  // Your weekly intelligence
+  progressVsSchedule: string;
+  delayReason: string;
+  rectificationPlan: string;
+  recommendedAction: string;
+  
+  confidenceScore: number;
+}
+
+export async function analyzeConstructionDocument(
+  fileBuffer: Buffer,
+  mimeType: string,
+  context: {
+    projectName: string;
+    contractorName: string;
+    filename: string;
+    documentType: 'photo' | 'pdf' | 'daily_report';
+  }
+): Promise<DocumentAnalysis> {
+  
+  const analysisPrompt = `
+You are SegaCore, an AI construction intelligence system based on 25+ years of PM experience.
+
+DOCUMENT CONTEXT:
+- Project: ${context.projectName}
+- Contractor: ${context.contractorName}
+- Document: ${context.filename}
+- Type: ${context.documentType}
+
+CRITICAL PM EXPERIENCE RULES:
+1. 10% schedule delay = CRITICAL intervention required
+2. "I need to ask my engineer" response = Management disconnect
+3. Labor productivity decline + idle plant = Failure pattern
+4. Continuous delays + non-performance = Contractor failure
+5. "We will stop work" attitude = Fails under pressure
+
+ANALYSIS REQUIREMENTS:
+
+1. SCHEDULE ASSESSMENT:
+   - Analyze progress against planned schedule
+   - Rate: on-track, 5%-delay, 10%-delay, critical
+   - If 10% delay detected, flag as CRITICAL
+
+2. LABOR PRODUCTIVITY (1-10 scale):
+   - Assess workforce activity and efficiency
+   - Count visible workers if photo
+   - Look for idle time or low activity
+
+3. SITE ACTIVITY:
+   - Rate as: active, lacking, idle
+   - Look for equipment usage, material movement, work progress
+
+4. JOBSITE WALK ASSESSMENT:
+   - Safety score (1-10): PPE, compliance, hazards
+   - Housekeeping (1-10): organization, cleanliness, material storage
+   - Quality score (1-10): workmanship, attention to detail
+   - Labor count: actual number of workers visible
+   - Equipment suitability: adequate/inadequate/excessive for crew size
+
+5. CONTRACTOR CAPABILITY INDICATORS:
+   - Response time assessment from communications
+   - Situational awareness: does contractor know their status?
+   - Management connection: connected/disconnected from field
+   - Pressure response: solution-focused/defensive/stop-work-threat
+
+6. WEEKLY INTELLIGENCE (Your Format):
+   - Progress vs planned schedule
+   - Specific reason for any delays
+   - Concrete rectification plan
+   - Recommended immediate actions
+
+RESPONSE FORMAT - JSON ONLY:
+{
+  "scheduleStatus": "on-track|5%-delay|10%-delay|critical",
+  "laborProductivity": 1-10,
+  "siteActivity": "active|lacking|idle",
+  "safetyScore": 1-10,
+  "housekeepingScore": 1-10,
+  "qualityScore": 1-10,
+  "laborCount": number,
+  "equipmentSuitability": "adequate|inadequate|excessive",
+  "responseTime": "quick|slow|no-response",
+  "situationalAwareness": true/false,
+  "managementConnection": "connected|disconnected",
+  "pressureResponse": "solution-focused|defensive|stop-work-threat",
+  "progressVsSchedule": "detailed assessment",
+  "delayReason": "specific reason if delayed",
+  "rectificationPlan": "concrete action plan",
+  "recommendedAction": "immediate next steps",
+  "confidenceScore": 0.0-1.0,
+  "criticalAlerts": ["any critical issues identified"],
+  "pmInsights": "additional observations based on 25+ years experience"
+}
+
+Analyze this construction document with the precision of an experienced PM who has seen these patterns hundreds of times before.
+`;
+
+  let content;
+  
+  if (mimeType.startsWith('image/')) {
+    const base64 = fileBuffer.toString('base64');
+    content = [
+      {
+        type: 'image',
+        source: {
+          type: 'base64',
+          media_type: mimeType,
+          data: base64
+        }
+      },
+      {
+        type: 'text',
+        text: analysisPrompt
+      }
+    ];
+  } else {
+    content = [{
+      type: 'text',
+      text: `${analysisPrompt}\n\nDocument content: ${fileBuffer.toString('utf8')}`
+    }];
+  }
+
+  try {
+    const response = await claude.messages.create({
+      model: 'claude-3-sonnet-20240229',
+      max_tokens: 2000,
+      messages: [{ role: 'user', content }]
+    });
+
+    const analysisText = response.content[0].text;
+    
+    // Parse JSON response
+    const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No JSON found in Claude response');
+    }
+    
+    const analysis = JSON.parse(jsonMatch[0]);
+    
+    // Apply your PM experience validation
+    const validatedAnalysis = applyPMExperienceRules(analysis, context);
+    
+    return validatedAnalysis;
+    
+  } catch (error) {
+    console.error('Claude analysis error:', error);
+    throw new Error(`AI analysis failed: ${error.message}`);
+  }
+}
+
+function applyPMExperienceRules(
+  analysis: any, 
+  context: any
+): DocumentAnalysis {
+  
+  // Your Rule 1: 10% delay = CRITICAL
+  if (analysis.scheduleStatus === '10%-delay' || analysis.scheduleStatus === 'critical') {
+    analysis.criticalAlerts = analysis.criticalAlerts || [];
+    analysis.criticalAlerts.push('CRITICAL: 10% schedule delay detected - Immediate risk management required');
+    analysis.recommendedAction = 'Immediate intervention: Daily oversight + concrete corrective action plan';
+  }
+  
+  // Your Rule 2: Management disconnect pattern
+  if (analysis.managementConnection === 'disconnected' && analysis.siteActivity === 'lacking') {
+    analysis.criticalAlerts = analysis.criticalAlerts || [];
+    analysis.criticalAlerts.push('WARNING: Management disconnect + poor site activity = Contractor failure pattern');
+    analysis.recommendedAction = 'Assess contractor capability - potential replacement needed';
+  }
+  
+  // Your Rule 3: Labor productivity + idle equipment
+  if (analysis.laborProductivity <= 4 && analysis.equipmentSuitability === 'excessive') {
+    analysis.criticalAlerts = analysis.criticalAlerts || [];
+    analysis.criticalAlerts.push('ALERT: Low productivity + idle equipment = Classic decline pattern');
+  }
+  
+  // Your Rule 4: Pressure response failure
+  if (analysis.pressureResponse === 'stop-work-threat') {
+    analysis.criticalAlerts = analysis.criticalAlerts || [];
+    analysis.criticalAlerts.push('HIGH RISK: Contractor fails under pressure - Enhanced oversight required');
+  }
+  
+  return analysis;
+}
+```
+
+---
+
+## Phase 4: Document Processing API (Week 3-4)
+
+### **File Upload and Processing**
+```typescript
+// app/api/upload/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { analyzeConstructionDocument } from '@/lib/claude-analyzer';
+import { storeDocumentIntelligence } from '@/lib/database';
+import multer from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760') // 10MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf', 'text/plain'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'), false);
+    }
+  }
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+    const projectId = formData.get('projectId') as string;
+    const documentType = formData.get('documentType') as string;
+    
+    if (!file || !projectId) {
+      return NextResponse.json(
+        { error: 'File and project ID required' },
+        { status: 400 }
+      );
+    }
+
+    // Convert file to buffer
+    const buffer = await file.arrayBuffer();
+    const fileBuffer = Buffer.from(buffer);
+    
+    // Get project context
+    const project = await getProjectContext(parseInt(projectId));
+    if (!project) {
+      return NextResponse.json(
+        { error: 'Project not found' },
+        { status: 404 }
+      );
+    }
+    
+    console.log(`📄 Processing document: ${file.name} for project: ${project.project_name}`);
+    
+    // Analyze document with Claude
+    const startTime = Date.now();
+    const analysis = await analyzeConstructionDocument(
+      fileBuffer,
+      file.type,
+      {
+        projectName: project.project_name,
+        contractorName: project.contractor_name,
+        filename: file.name,
+        documentType: documentType as 'photo' | 'pdf' | 'daily_report'
+      }
+    );
+    const processingTime = Date.now() - startTime;
+    
+    // Store intelligence in database
+    const intelligenceRecord = await storeDocumentIntelligence({
+      projectId: parseInt(projectId),
+      filename: file.name,
+      fileType: documentType,
+      fileHash: generateFileHash(fileBuffer),
+      analysis,
+      processingTime
+    });
+    
+    // Update contractor performance
+    await updateContractorPerformance(project.contractor_name, analysis);
+    
+    console.log(`✅ Document processed: ID ${intelligenceRecord.id}, Time: ${processingTime}ms`);
+    
+    return NextResponse.json({
+      success: true,
+      intelligenceId: intelligenceRecord.id,
+      analysis: {
+        scheduleStatus: analysis.scheduleStatus,
+        alertLevel: analysis.criticalAlerts?.length > 0 ? 'CRITICAL' : 'NORMAL',
+        safetyScore: analysis.safetyScore,
+        qualityScore: analysis.qualityScore,
+        laborProductivity: analysis.laborProductivity,
+        recommendedAction: analysis.recommendedAction,
+        criticalAlerts: analysis.criticalAlerts || []
+      },
+      processingTime
+    });
+    
+  } catch (error) {
+    console.error('Document processing error:', error);
+    return NextResponse.json(
+      { error: `Processing failed: ${error.message}` },
+      { status: 500 }
+    );
+  }
+}
+
+// Helper functions
+async function getProjectContext(projectId: number) {
+  // Database query to get project details
+  // Implementation depends on your database setup
+}
+
+async function storeDocumentIntelligence(data: any) {
+  // Store in document_intelligence table
+  // Return the created record
+}
+
+async function updateContractorPerformance(contractorName: string, analysis: any) {
+  // Update contractor_performance table with new data
+}
+
+function generateFileHash(buffer: Buffer): string {
+  const crypto = require('crypto');
+  return crypto.createHash('sha256').update(buffer).digest('hex');
+}
+```
+
+---
+
+## Phase 5: PM Validation Interface (Week 4)
+
+### **Validation Dashboard Component**
+```typescript
+// components/PMValidationDashboard.tsx
+import React, { useState, useEffect } from 'react';
+import { CheckCircle, XCircle, AlertTriangle, MessageSquare } from 'lucide-react';
+
+interface DocumentIntelligence {
+  id: number;
+  filename: string;
+  projectName: string;
+  contractorName: string;
+  uploadDate: string;
+  
+  // AI Analysis
+  scheduleStatus: string;
+  safetyScore: number;
+  qualityScore: number;
+  laborProductivity: number;
+  recommendedAction: string;
+  criticalAlerts: string[];
+  
+  // PM Validation
+  pmValidated: boolean;
+  pmAgreement: string | null;
+  pmNotes: string | null;
+}
+
+export function PMValidationDashboard() {
+  const [pendingDocuments, setPendingDocuments] = useState<DocumentIntelligence[]>([]);
+  const [selectedDoc, setSelectedDoc] = useState<DocumentIntelligence | null>(null);
+  const [validationNotes, setValidationNotes] = useState('');
+  const [agreement, setAgreement] = useState<'agree' | 'disagree' | 'partial'>('agree');
+
+  useEffect(() => {
+    loadPendingValidations();
+  }, []);
+
+  const loadPendingValidations = async () => {
+    try {
+      const response = await fetch('/api/intelligence/pending-validation');
+      const documents = await response.json();
+      setPendingDocuments(documents);
+    } catch (error) {
+      console.error('Failed to load pending validations:', error);
+    }
+  };
+
+  const submitValidation = async () => {
+    if (!selectedDoc) return;
+
+    try {
+      const response = await fetch(`/api/intelligence/${selectedDoc.id}/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agreement,
+          notes: validationNotes,
+          corrections: agreement !== 'agree' ? generateCorrections() : null
+        })
+      });
+
+      if (response.ok) {
+        // Remove from pending list
+        setPendingDocuments(prev => prev.filter(doc => doc.id !== selectedDoc.id));
+        setSelectedDoc(null);
+        setValidationNotes('');
+        
+        console.log('✅ Validation submitted successfully');
+      }
+    } catch (error) {
+      console.error('Validation submission failed:', error);
+    }
+  };
+
+  const generateCorrections = () => {
+    // Helper to capture PM corrections for learning system
+    return {
+      scheduleAssessment: selectedDoc?.scheduleStatus,
+      pmScheduleAssessment: 'PM corrected assessment',
+      reasoning: validationNotes
+    };
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">PM Validation Dashboard</h1>
+        <p className="text-gray-600 mt-2">
+          Review AI analysis and provide validation based on your 25+ years experience
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Pending Documents List */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-4 border-b">
+            <h2 className="text-lg font-semibold">Pending Validation ({pendingDocuments.length})</h2>
+          </div>
+          
+          <div className="divide-y">
+            {pendingDocuments.map((doc) => (
+              <div 
+                key={doc.id}
+                className={`p-4 cursor-pointer hover:bg-gray-50 ${
+                  selectedDoc?.id === doc.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                }`}
+                onClick={() => setSelectedDoc(doc)}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-medium text-gray-900">{doc.filename}</h3>
+                    <p className="text-sm text-gray-600">{doc.projectName}</p>
+                    <p className="text-sm text-gray-500">Contractor: {doc.contractorName}</p>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    {doc.criticalAlerts.length > 0 && (
+                      <AlertTriangle className="h-5 w-5 text-red-500" />
+                    )}
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      doc.scheduleStatus === 'critical' ? 'bg-red-100 text-red-800' :
+                      doc.scheduleStatus === '10%-delay' ? 'bg-orange-100 text-orange-800' :
+                      doc.scheduleStatus === '5%-delay' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {doc.scheduleStatus}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="mt-2 flex space-x-4 text-sm text-gray-600">
+                  <span>Safety: {doc.safetyScore}/10</span>
+                  <span>Quality: {doc.qualityScore}/10</span>
+                  <span>Productivity: {doc.laborProductivity}/10</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Validation Panel */}
+        <div className="bg-white rounded-lg shadow">
+          {selectedDoc ? (
+            <div className="p-4">
+              <div className="border-b pb-4 mb-4">
+                <h2 className="text-lg font-semibold">Validate AI Analysis</h2>
+                <p className="text-gray-600">{selectedDoc.filename}</p>
+              </div>
+
+              {/* AI Analysis Summary */}
+              <div className="mb-6">
+                <h3 className="font-medium text-gray-900 mb-3">AI Analysis Results</h3>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span>Schedule Status:</span>
+                    <span className={`font-medium ${
+                      selectedDoc.scheduleStatus === 'critical' ? 'text-red-600' :
+                      selectedDoc.scheduleStatus.includes('delay') ? 'text-orange-600' :
+                      'text-green-600'
+                    }`}>
+                      {selectedDoc.scheduleStatus}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span>Safety Score:</span>
+                    <span className="font-medium">{selectedDoc.safetyScore}/10</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span>Quality Score:</span>
+                    <span className="font-medium">{selectedDoc.qualityScore}/10</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span>Labor Productivity:</span>
+                    <span className="font-medium">{selectedDoc.laborProductivity}/10</span>
+                  </div>
+                </div>
+
+                {selectedDoc.criticalAlerts.length > 0 && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+                    <h4 className="font-medium text-red-800 mb-2">Critical Alerts</h4>
+                    {selectedDoc.criticalAlerts.map((alert, index) => (
+                      <p key={index} className="text-sm text-red-700">• {alert}</p>
+                    ))}
+                  </div>
+                )}
+
+                <div className="mt-4 p-3 bg-gray-50 border rounded">
+                  <h4 className="font-medium text-gray-800 mb-1">Recommended Action</h4>
+                  <p className="text-sm text-gray-700">{selectedDoc.recommendedAction}</p>
+                </div>
+              </div>
+
+              {/* PM Validation Form */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Do you agree with this AI analysis?
+                  </label>
+                  <div className="flex space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="agreement"
+                        value="agree"
+                        checked={agreement === 'agree'}
+                        onChange={(e) => setAgreement(e.target.value as 'agree')}
+                        className="mr-2"
+                      />
+                      <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                      Agree
+                    </label>
+                    
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="agreement"
+                        value="partial"
+                        checked={agreement === 'partial'}
+                        onChange={(e) => setAgreement(e.target.value as 'partial')}
+                        className="mr-2"
+                      />
+                      <AlertTriangle className="h-4 w-4 text-yellow-500 mr-1" />
+                      Partially
+                    </label>
+                    
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="agreement"
+                        value="disagree"
+                        checked={agreement === 'disagree'}
+                        onChange={(e) => setAgreement(e.target.value as 'disagree')}
+                        className="mr-2"
+                      />
+                      <XCircle className="h-4 w-4 text-red-500 mr-1" />
+                      Disagree
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    PM Experience Notes {agreement !== 'agree' && <span className="text-red-500">*</span>}
+                  </label>
+                  <textarea
+                    value={validationNotes}
+                    onChange={(e) => setValidationNotes(e.target.value)}
+                    placeholder="Based on your 25+ years experience, what corrections or insights should be added?"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    rows={4}
+                  />
+                </div>
+
+                <button
+                  onClick={submitValidation}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+                >
+                  Submit Validation
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p>Select a document to validate AI analysis</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## Phase 6: Weekly Intelligence Reports (Week 5)
+
+### **Intelligence Generation System**
+```typescript
+// lib/intelligence-generator.ts
+import { generateWeeklyIntelligence } from './claude-analyzer';
+
+interface WeeklyIntelligenceData {
+  projectId: number;
+  weekEnding: Date;
+  progressSummary: string;
+  scheduleVariance: number;
+  delayReasons: string[];
+  rectificationPlans: string[];
+  recommendedActions: string[];
+  alertLevel: 'good' | 'monitor' | 'warning' | 'critical';
+  interventionRequired: boolean;
+  documentsAnalyzed: number;
+  contractorPerformanceTrend: 'improving' | 'stable' | 'declining';
+}
+
+export async function generateWeeklyReport(projectId: number): Promise<WeeklyIntelligenceData> {
+  // Get week's documents
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - 7);
+  
+  const documents = await getWeeklyDocuments(projectId, weekStart);
+  
+  if (documents.length === 0) {
+    throw new Error('No documents found for weekly analysis');
+  }
+  
+  // Analyze trends and patterns
+  const weeklyAnalysis = await analyzeWeeklyTrends(documents);
+  
+  // Apply your PM experience rules
+  const intelligence = applyWeeklyIntelligenceRules(weeklyAnalysis);
+  
+  // Store in database
+  const report = await storeWeeklyIntelligence(intelligence);
+  
+  return report;
+}
+
+async function analyzeWeeklyTrends(documents: any[]) {
+  const prompt = `
+You are SegaCore's weekly intelligence generator, applying 25+ years of PM experience.
+
+WEEKLY DOCUMENT ANALYSIS:
+${documents.map(doc => `
+- ${doc.filename}: Schedule: ${doc.schedule_status}, Safety: ${doc.safety_score}/10, Quality: ${doc.quality_score}/10, Productivity: ${doc.labor_productivity}/10
+- Recommended Action: ${doc.recommended_action}
+- Critical Alerts: ${doc.critical_alerts || 'None'}
+`).join('\n')}
+
+GENERATE WEEKLY INTELLIGENCE REPORT:
+
+1. PROGRESS SUMMARY:
+   - Overall project progress this week
+   - Key activities completed
+   - Major milestones achieved or missed
+
+2. SCHEDULE ANALYSIS:
+   - Calculate percentage behind/ahead of schedule
+   - Identify specific delay causes
+   - Assess trend (improving/stable/declining)
+
+3. YOUR WEEKLY INTELLIGENCE FORMAT:
+   - Progress vs planned schedule (be specific)
+   - Exact reasons for any delays
+   - Concrete rectification plans with timelines
+   - Immediate recommended actions
+
+4. ALERT LEVEL ASSESSMENT:
+   - GOOD: On track, no issues
+   - MONITOR: Minor delays, watching closely
+   - WARNING: Significant delays, action needed
+   - CRITICAL: 10%+ delay or failure patterns detected
+
+5. CONTRACTOR PERFORMANCE TREND:
+   - Improving: Getting better over time
+   - Stable: Consistent performance
+   - Declining: Performance degrading
+
+RESPONSE FORMAT - JSON:
+{
+  "progressSummary": "detailed week summary",
+  "scheduleVariance": percentage (negative for behind, positive for ahead),
+  "delayReasons": ["specific reason 1", "specific reason 2"],
+  "rectificationPlans": ["concrete plan 1", "concrete plan 2"],
+  "recommendedActions": ["immediate action 1", "immediate action 2"],
+  "alertLevel": "good|monitor|warning|critical",
+  "interventionRequired": true/false,
+  "contractorPerformanceTrend": "improving|stable|declining",
+  "keyInsights": ["PM insight 1", "PM insight 2"],
+  "criticalIssues": ["issue 1 if any", "issue 2 if any"]
+}
+`;
+
+  const response = await claude.messages.create({
+    model: 'claude-3-sonnet-20240229',
+    max_tokens: 1500,
+    messages: [{ role: 'user', content: prompt }]
+  });
+
+  const analysisText = response.content[0].text;
+  const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+  
+  if (!jsonMatch) {
+    throw new Error('No JSON found in weekly analysis response');
+  }
+  
+  return JSON.parse(jsonMatch[0]);
+}
+
+function applyWeeklyIntelligenceRules(analysis: any): WeeklyIntelligenceData {
+  // Your Rule 1: 10% delay = CRITICAL
+  if (Math.abs(analysis.scheduleVariance) >= 10) {
+    analysis.alertLevel = 'critical';
+    analysis.interventionRequired = true;
+    analysis.recommendedActions.unshift('IMMEDIATE: 10% schedule variance requires immediate risk management');
+  }
+  
+  // Your Rule 2: Declining trend + delays = WARNING
+  if (analysis.contractorPerformanceTrend === 'declining' && analysis.scheduleVariance < -5) {
+    analysis.alertLevel = analysis.alertLevel === 'critical' ? 'critical' : 'warning';
+    analysis.interventionRequired = true;
+  }
+  
+  return analysis;
+}
+```
+
+---
+
+## Phase 7: Learning System (Week 6)
+
+### **Feedback and Learning Engine**
+```typescript
+// lib/learning-system.ts
+export class SegaCoreLearningSystem {
+  
+  async captureValidationFeedback(
+    documentId: number,
+    pmFeedback: {
+      agreement: 'agree' | 'disagree' | 'partial';
+      notes: string;
+      corrections?: any;
+    }
+  ) {
+    // Store PM feedback
+    await this.storeLearningFeedback({
+      documentId,
+      pmAgreement: pmFeedback.agreement,
+      pmNotes: pmFeedback.notes,
+      pmCorrections: pmFeedback.corrections
+    });
+    
+    // If disagreement, analyze for pattern updates
+    if (pmFeedback.agreement !== 'agree') {
+      await this.analyzeDisagreementPattern(documentId, pmFeedback);
+    }
+    
+    console.log('📚 Learning feedback captured for document:', documentId);
+  }
+  
+  async analyzeDisagreementPattern(documentId: number, feedback: any) {
+    // Get original AI analysis
+    const document = await this.getDocumentIntelligence(documentId);
+    
+    // Identify pattern to adjust
+    const pattern = {
+      aiPrediction: document.claude_analysis,
+      pmCorrection: feedback.notes,
+      disagreementType: feedback.agreement,
+      contractorName: document.contractor_name,
+      documentType: document.file_type
+    };
+    
+    // Check if this is a recurring pattern
+    const similarDisagreements = await this.findSimilarDisagreements(pattern);
+    
+    if (similarDisagreements.length >= 3) {
+      // Pattern detected - suggest rule adjustment
+      await this.suggestRuleAdjustment(pattern, similarDisagreements);
+    }
+  }
+  
+  async suggestRuleAdjustment(pattern: any, examples: any[]) {
+    const prompt = `
+Based on recurring PM disagreements with AI analysis, suggest rule adjustments:
+
+PATTERN IDENTIFIED:
+AI consistently predicts: ${pattern.aiPrediction}
+PM consistently corrects: ${pattern.pmCorrection}
+Contractor: ${pattern.contractorName}
+Frequency: ${examples.length} times
+
+SIMILAR EXAMPLES:
+${examples.map(ex => `- AI: ${ex.ai_prediction} | PM: ${ex.pm_correction}`).join('\n')}
+
+SUGGEST RULE ADJUSTMENT:
+1. What specific rule should be modified?
+2. What adjustment should be made?
+3. What confidence level for this adjustment?
+4. Should this apply to specific contractors or all projects?
+
+Respond in JSON format with specific, actionable rule changes.
+`;
+
+    const response = await claude.messages.create({
+      model: 'claude-3-sonnet-20240229',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    const suggestion = JSON.parse(response.content[0].text);
+    
+    // Store rule adjustment suggestion for PM review
+    await this.storeRuleAdjustmentSuggestion(suggestion);
+    
+    console.log('🎯 Rule adjustment suggested based on pattern analysis');
+  }
+  
+  async trackPredictionAccuracy() {
+    // Compare AI predictions with actual outcomes
+    const predictions = await this.getPredictionsWithOutcomes();
+    
+    let correctPredictions = 0;
+    const totalPredictions = predictions.length;
+    
+    for (const prediction of predictions) {
+      if (this.isPredictionAccurate(prediction)) {
+        correctPredictions++;
+      }
+    }
+    
+    const accuracy = correctPredictions / totalPredictions;
+    
+    await this.updateSystemAccuracyMetrics({
+      accuracy,
+      totalPredictions,
+      correctPredictions,
+      measuredAt: new Date()
+    });
+    
+    console.log(`📊 System accuracy: ${(accuracy * 100).toFixed(1)}% (${correctPredictions}/${totalPredictions})`);
+    
+    return accuracy;
+  }
+  
+  private isPredictionAccurate(prediction: any): boolean {
+    // Define accuracy criteria based on your experience
+    const timelineAccuracy = Math.abs(prediction.predicted_days - prediction.actual_days) <= 7; // Within 1 week
+    const outcomeAccuracy = prediction.predicted_outcome === prediction.actual_outcome;
+    
+    return timelineAccuracy && outcomeAccuracy;
+  }
+}
+```
+
+---
+
+## Phase 8: Deployment Configuration (Week 6)
+
+### **Production Deployment Setup**
+
+#### **Netlify Configuration (netlify.toml)**
+```toml
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
+
+# API Routes
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Environment Variables (set in Netlify dashboard)
+# ANTHROPIC_API_KEY
+# DATABASE_URL  
+# JWT_SECRET
+# MAX_FILE_SIZE
+```
+
+#### **GitHub Actions (/.github/workflows/deploy.yml)**
+```yaml
+name: Deploy SegaCore V1.0
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Deploy to Netlify
+      uses: netlify/actions/build@master
+      with:
+        publish-dir: .next
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+```
+
+---
+
+## Success Metrics and Testing Plan
+
+### **V1.0 Success Criteria**
+- [ ] **Process 100+ documents** in first month
+- [ ] **85%+ PM validation agreement** with AI analysis  
+- [ ] **Generate weekly intelligence** for all active projects
+- [ ] **Identify early warning patterns** with 80%+ accuracy
+- [ ] **System reliability:** 99%+ uptime, <3 second response times
+
+### **Testing Strategy**
+1. **Unit Testing:** Core AI analysis functions
+2. **Integration Testing:** Document upload → AI analysis → database storage
+3. **User Testing:** PM validation workflow and dashboard
+4. **Performance Testing:** File processing under load
+5. **Real Project Testing:** Deploy on 2-3 active projects
+
+### **Learning Metrics**
+- **Validation Rate:** % of AI analyses validated by PM
+- **Agreement Rate:** % of validations where PM agrees with AI
+- **Pattern Accuracy:** % of early warnings that prove correct
+- **Time Savings:** Reduction in contractor assessment time
+- **Business Impact:** Number of prevented failures/issues
+
+---
+
+## Next Steps for Implementation
+
+### **Week 1-2: Foundation**
+- Set up Replit project with all dependencies
+- Create database schema and basic API structure
+- Implement Claude integration for document analysis
+
+### **Week 3-4: Core Features**
+- Build document upload and processing pipeline
+- Create PM validation interface
+- Implement basic intelligence reporting
+
+### **Week 5-6: Advanced Features** 
+- Add weekly intelligence generation
+- Build learning and feedback system
+- Deploy to production environment
+
+### **Week 7-8: Testing & Refinement**
+- Test with real construction documents
+- Refine AI prompts based on results
+- Optimize performance and user experience
+
+**Ready to start building SegaCore V1.0? This comprehensive plan gives you everything needed to create your construction intelligence system through Replit + CodeCraft + Claude!**
