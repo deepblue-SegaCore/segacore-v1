@@ -15,38 +15,59 @@ interface ValidationItem {
 const mockValidations: ValidationItem[] = [
   {
     id: '1',
-    category: 'Timeline Compliance',
-    description: 'Project milestones alignment',
+    category: '🎯 10% Delay Rule',
+    description: 'Critical schedule delay threshold (Your Experience)',
     status: 'passed',
-    details: 'All major milestones are on track with original timeline'
+    details: 'Current delay is 5% - below critical 10% threshold that requires immediate intervention'
   },
   {
     id: '2',
-    category: 'Budget Adherence',
-    description: 'Cost management validation',
+    category: '🚨 Contractor Failure Pattern',
+    description: 'Management disconnect + low productivity (25+ year pattern)',
     status: 'warning',
-    details: 'Current spending is 5% over projected budget for this phase'
+    details: 'Contractor responses slower than normal, but management still connected to site operations'
   },
   {
     id: '3',
-    category: 'Resource Allocation',
-    description: 'Team and equipment optimization',
-    status: 'failed',
-    details: 'Insufficient crane operators scheduled for Phase 3'
+    category: '⚠️ Pressure Response Test',
+    description: 'How contractor handles pressure situations',
+    status: 'passed',
+    details: 'Contractor responds with solutions rather than defensive "stop work" threats'
   },
   {
     id: '4',
-    category: 'Safety Compliance',
-    description: 'Safety protocol adherence',
-    status: 'passed',
-    details: 'All safety requirements met according to OSHA standards'
+    category: '📉 Labor Productivity Decline',
+    description: 'Visible decline pattern + idle equipment',
+    status: 'failed',
+    details: 'Labor productivity dropped to 4/10 with equipment sitting idle - classic decline pattern'
   },
   {
     id: '5',
-    category: 'Quality Standards',
-    description: 'Construction quality validation',
-    status: 'pending',
-    details: 'Awaiting structural engineer inspection report'
+    category: '🏗️ Housekeeping Predictor',
+    description: 'Material organization predicts productivity',
+    status: 'warning',
+    details: 'Site housekeeping declining for 3 consecutive days - leading productivity indicator'
+  },
+  {
+    id: '6',
+    category: '🎯 TIME Factor',
+    description: 'Schedule performance and momentum',
+    status: 'passed',
+    details: 'Weekly progress meeting targets, good momentum maintained'
+  },
+  {
+    id: '7',
+    category: '🛡️ SAFETY Factor',
+    description: 'Culture and compliance patterns',
+    status: 'passed',
+    details: 'Safety culture strong, compliance patterns consistent'
+  },
+  {
+    id: '8',
+    category: '⚡ QUALITY Factor',
+    description: 'Standards clarity and continuous monitoring',
+    status: 'passed',
+    details: 'Quality standards clear, monitoring processes effective'
   }
 ]
 
@@ -166,7 +187,7 @@ export default function PMValidationDashboard() {
       {/* Validation Details Modal */}
       {selectedValidation && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-white rounded-lg max-w-lg w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">{selectedValidation.category}</h3>
               <button 
@@ -184,14 +205,38 @@ export default function PMValidationDashboard() {
                 </span>
               </div>
               <p className="text-sm text-gray-600 mb-3">{selectedValidation.description}</p>
-              <p className="text-sm text-gray-800">{selectedValidation.details}</p>
+              <p className="text-sm text-gray-800 mb-4">{selectedValidation.details}</p>
+              
+              {/* PM Learning Feedback */}
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="text-sm font-semibold text-blue-900 mb-2">🧠 PM Experience Feedback</h4>
+                <p className="text-xs text-blue-700 mb-3">
+                  Help SegaCore learn from your 25+ years of experience
+                </p>
+                <div className="space-y-2">
+                  <button className="w-full text-left px-3 py-2 bg-green-100 hover:bg-green-200 rounded text-sm">
+                    ✅ AI analysis matches my experience
+                  </button>
+                  <button className="w-full text-left px-3 py-2 bg-yellow-100 hover:bg-yellow-200 rounded text-sm">
+                    ⚠️ Partially correct - needs adjustment
+                  </button>
+                  <button className="w-full text-left px-3 py-2 bg-red-100 hover:bg-red-200 rounded text-sm">
+                    ❌ Disagree - I've seen this pattern before
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end space-x-2">
               <button 
                 onClick={() => setSelectedValidation(null)}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
               >
                 Close
+              </button>
+              <button 
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Save Feedback
               </button>
             </div>
           </div>

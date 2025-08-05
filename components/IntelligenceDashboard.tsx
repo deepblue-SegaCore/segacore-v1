@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-import { TrendingUp, AlertTriangle, DollarSign, Calendar } from 'lucide-react'
+import { TrendingUp, AlertTriangle, DollarSign, Calendar, Clock, Users, HardHat, CheckCircle } from 'lucide-react'
+import { ValidatedIntelligence } from '../lib/segacore-intelligence'
 
 const mockData = [
   { name: 'Jan', projects: 4, budget: 2400000, spent: 1800000 },
@@ -23,9 +24,11 @@ const riskData = [
 export default function IntelligenceDashboard() {
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
+  const [segaCoreIntelligence, setSegaCoreIntelligence] = useState<ValidatedIntelligence | null>(null)
 
   useEffect(() => {
     fetchProjects()
+    fetchSegaCoreIntelligence()
   }, [])
 
   const fetchProjects = async () => {
@@ -42,12 +45,95 @@ export default function IntelligenceDashboard() {
     }
   }
 
+  const fetchSegaCoreIntelligence = async () => {
+    try {
+      const response = await fetch('/api/segacore-intelligence')
+      if (response.ok) {
+        const data = await response.json()
+        setSegaCoreIntelligence(data.intelligence)
+      }
+    } catch (error) {
+      console.error('Failed to fetch SegaCore intelligence:', error)
+    }
+  }
+
   if (loading) {
     return <div className="flex justify-center py-8">Loading...</div>
   }
 
   return (
     <div className="space-y-6">
+      {/* SegaCore V1.0 PM Intelligence */}
+      {segaCoreIntelligence && (
+        <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold">🎯 SegaCore V1.0 PM Intelligence</h2>
+            <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
+              segaCoreIntelligence.alertLevel === 'CRITICAL' ? 'bg-red-500' :
+              segaCoreIntelligence.alertLevel === 'HIGH' ? 'bg-orange-500' :
+              segaCoreIntelligence.alertLevel === 'MEDIUM' ? 'bg-yellow-500' :
+              'bg-green-500'
+            }`}>
+              {segaCoreIntelligence.alertLevel} RISK
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div className="bg-white/10 p-4 rounded-lg">
+              <div className="flex items-center">
+                <Clock className="w-6 h-6 mr-2" />
+                <div>
+                  <p className="text-sm opacity-80">Schedule Status</p>
+                  <p className="font-bold">{segaCoreIntelligence.progressAnalysis.scheduleStatus}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white/10 p-4 rounded-lg">
+              <div className="flex items-center">
+                <Users className="w-6 h-6 mr-2" />
+                <div>
+                  <p className="text-sm opacity-80">Labor Productivity</p>
+                  <p className="font-bold">{segaCoreIntelligence.progressAnalysis.laborProductivity}/10</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white/10 p-4 rounded-lg">
+              <div className="flex items-center">
+                <HardHat className="w-6 h-6 mr-2" />
+                <div>
+                  <p className="text-sm opacity-80">Safety Score</p>
+                  <p className="font-bold">{segaCoreIntelligence.siteAssessment.safety}/10</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white/10 p-4 rounded-lg">
+              <div className="flex items-center">
+                <CheckCircle className="w-6 h-6 mr-2" />
+                <div>
+                  <p className="text-sm opacity-80">Quality Score</p>
+                  <p className="font-bold">{segaCoreIntelligence.siteAssessment.qualityOfWork}/10</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white/10 p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">🧠 PM Recommendation</h3>
+            <p className="mb-2">{segaCoreIntelligence.pmRecommendation}</p>
+            {segaCoreIntelligence.patternMatch && (
+              <p className="text-sm opacity-80">Pattern: {segaCoreIntelligence.patternMatch}</p>
+            )}
+            <div className="mt-2 text-sm">
+              Confidence: {Math.round(segaCoreIntelligence.confidence * 100)}% | 
+              {segaCoreIntelligence.interventionRequired ? ' Intervention Required' : ' Monitoring Sufficient'}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-blue-50 p-6 rounded-lg">
