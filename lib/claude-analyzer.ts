@@ -1,4 +1,3 @@
-
 import Anthropic from '@anthropic-ai/sdk'
 
 const anthropic = new Anthropic({
@@ -49,7 +48,7 @@ export async function analyzeConstructionDocument(
     `
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-sonnet-20240229',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 2000,
       messages: [{
         role: 'user',
@@ -58,7 +57,7 @@ export async function analyzeConstructionDocument(
     })
 
     const responseText = message.content[0].type === 'text' ? message.content[0].text : ''
-    
+
     try {
       return JSON.parse(responseText) as AnalysisResult
     } catch (parseError) {
@@ -102,7 +101,7 @@ export async function generateProjectIntelligence(
     `
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-sonnet-20240229',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 2000,
       messages: [{
         role: 'user',
