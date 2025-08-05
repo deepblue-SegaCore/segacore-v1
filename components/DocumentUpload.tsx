@@ -69,7 +69,7 @@ export default function DocumentUpload() {
             accept=".pdf,.doc,.docx,.xls,.xlsx,.json"
             onChange={handleFileUpload}
             disabled={uploading}
-          /></label>
+          />
           {uploading ? 'Uploading...' : 'Choose File'}
         </label>
       </div>
