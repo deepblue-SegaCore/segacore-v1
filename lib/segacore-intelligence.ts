@@ -140,13 +140,33 @@ export async function generateSegaCoreIntelligence(
   projectContext?: any
 ): Promise<ValidatedIntelligence> {
   try {
+    // Handle Docling processed JSON files
+    let processedContent = documentContent
+    let analysisContext = documentType
+    
+    if (documentType === 'application/json' || documentType.includes('json')) {
+      try {
+        const jsonData = JSON.parse(documentContent)
+        if (jsonData.docling_processed || jsonData.document_content || jsonData.extracted_text) {
+          processedContent = jsonData.document_content || jsonData.extracted_text || JSON.stringify(jsonData)
+          analysisContext = `docling_processed_${jsonData.original_type || 'document'}`
+        }
+      } catch (e) {
+        // If JSON parsing fails, treat as regular text
+        console.log('JSON parsing failed, treating as text:', e)
+      }
+    }
+
     const prompt = `
     You are SegaCore V1.0 - a construction PM intelligence system with 25+ years of field experience.
     
     Analyze this construction document using proven PM patterns:
     
-    Document Type: ${documentType}
-    Content: ${documentContent}
+    Document Type: ${analysisContext}
+    Content: ${processedContent}
+    
+    ${analysisContext.includes('docling_processed') ? 
+      'Note: This document has been pre-processed by Docling for enhanced text extraction and structure.' : ''}
     
     Provide analysis in this exact JSON format:
     {

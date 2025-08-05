@@ -60,16 +60,16 @@ export default function DocumentUpload() {
           Upload Construction Documents
         </h3>
         <p className="text-gray-500 mb-4">
-          Supported formats: PDF, DOC, DOCX, XLS, XLSX
+          Supported formats: PDF, DOC, DOCX, XLS, XLSX, JSON (Docling processed)
         </p>
         <label className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700">
           <input
             type="file"
             className="hidden"
-            accept=".pdf,.doc,.docx,.xls,.xlsx"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.json"
             onChange={handleFileUpload}
             disabled={uploading}
-          />
+          /></label>
           {uploading ? 'Uploading...' : 'Choose File'}
         </label>
       </div>
