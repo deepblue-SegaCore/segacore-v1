@@ -1,6 +1,8 @@
+
 {
-  "name": "my-app",
-  "version": "0.1.0",
+  "name": "segacore-v1",
+  "version": "1.0.0",
+  "description": "Construction Intelligence Platform",
   "private": true,
   "scripts": {
     "dev": "next dev --port 3000 --hostname 0.0.0.0",
@@ -9,17 +11,30 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "^15.2.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "tailwindcss": "^4.0.15"
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "tailwindcss": "^3.3.0",
+    "lucide-react": "^0.263.1",
+    "recharts": "^2.8.0",
+    "@anthropic-ai/sdk": "^0.24.0",
+    "multer": "^1.4.5",
+    "pg": "^8.11.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0",
+    "dotenv": "^16.3.0",
+    "uuid": "^9.0.0",
+    "@types/uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.13.11",
-    "@types/react": "^19.0.12",
-    "@types/react-dom": "^19.0.4",
+    "@types/multer": "^1.4.7",
+    "@types/pg": "^8.10.0",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^9.0.0",
     "eslint": "^9.23.0",
-    "eslint-config-next": "^15.2.3",
-    "typescript": "^5.8.2"
+    "eslint-config-next": "^15.2.3"
   }
 }
